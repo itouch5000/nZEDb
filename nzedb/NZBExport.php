@@ -172,8 +172,8 @@ class NZBExport
 				}
 
 				// Create path to current file.
-				$exportedNzb = $release['password'] ? $release['searchname'] . '{{' . $release['password'] . '}}' : $release['searchname'];
-				$currentFile = $currentPath . $this->safeFilename($exportedNzb);
+				$exportedNzb = $release['password'] ? $this->safeFilename($release['searchname']) . '{{' . $release['password'] . '}}' : $this->safeFilename($release['searchname']);
+				$currentFile = $currentPath . $exportedNzb;
 
 				// Check if the user wants them in gzip, copy it if so.
 				if ($gzip) {

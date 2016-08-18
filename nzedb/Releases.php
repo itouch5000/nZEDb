@@ -362,7 +362,7 @@ class Releases
 	{
 		return $this->pdo->query(
 			sprintf(
-				"SELECT searchname, guid, g.name AS gname, CONCAT(cp.title, '_', c.title) AS catName
+				"SELECT searchname, guid, password, g.name AS gname, CONCAT(cp.title, '_', c.title) AS catName
 				FROM releases r
 				LEFT JOIN categories c ON r.categories_id = c.id
 				LEFT JOIN groups g ON r.groups_id = g.id

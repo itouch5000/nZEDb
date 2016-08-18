@@ -342,7 +342,7 @@ class NZBImport
 			if ($password != false) {
 				$this->passwordToNzb($nzbXML, $password);
 			}
-			$useNzbName = preg_replace("{{.*}}", "", $useNzbName);
+			$useNzbName = trim(preg_replace("{{.*}}", "", $useNzbName));
 		}
 		if ($password === false) {
 			$password = $this->passwordFromXML($nzbXML);

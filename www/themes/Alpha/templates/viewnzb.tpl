@@ -576,7 +576,13 @@
 	<td title="{$release.adddate}">{$release.adddate} ({$release.adddate|daysago})
 	</td>
 </tr>
-
+{if $release.password}
+<tr>
+	<th style="vertical-align:top">Unrar Password:</th>
+	<td title="{$release.password}"><code>{$release.password}</code>
+	</td>
+</tr>
+{/if}
 
 
 {if $similars|@count > 1}

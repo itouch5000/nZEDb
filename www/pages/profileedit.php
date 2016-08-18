@@ -88,7 +88,8 @@ switch ($action) {
 					(isset($_POST['saburl']) ? Text::trailingSlash($_POST['saburl']) : ''),
 					(isset($_POST['sabapikey']) ? $_POST['sabapikey'] : ''),
 					(isset($_POST['sabpriority']) ? $_POST['sabpriority'] : ''),
-					(isset($_POST['sabapikeytype']) ? $_POST['sabapikeytype'] : '')
+					(isset($_POST['sabapikeytype']) ? $_POST['sabapikeytype'] : ''),
+					(isset($_POST['appendpassword']) ? "1" : "0")
 				);
 
 				$_POST['exccat'] = (!isset($_POST['exccat']) || !is_array($_POST['exccat'])) ? array() : $_POST['exccat'];

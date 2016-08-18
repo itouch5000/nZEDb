@@ -199,7 +199,7 @@ class NZBImport
 
 					// Try to compress the NZB file in the NZB folder.
 					$fp = gzopen($path, 'w5');
-					gzwrite($fp, $nzbString);
+					gzwrite($fp, $nzbXML->asXML());
 					gzclose($fp);
 
 					if (!is_file($path)) {
@@ -259,6 +259,73 @@ class NZBImport
 	}
 
 	/**
+	 * @param object $filename filename of NZB File ex: Release.S01e01.Name-Group{{PASSWORD}}.nzb
+	 * @return string|false
+	 *
+	 * @access protected
+	 */
+	protected function passwordFromName($filename)
+	{
+		$r = explode("{{", $filename);
+		if (isset($r[1])){
+				$r = explode("}}", $r[1]);
+				return $r[0];
+		}
+		return false;
+	}
+
+	/**
+	 * @param object $nzbXML Reference of simpleXmlObject with NZB contents.
+	 * @param string $password the password to write in XML Header.
+	 * @return bool
+	 *
+	 * @access protected
+	 */
+	protected function passwordToNzb(&$mynzb, $password)
+	{
+	//set the password as meta key inside the nzb file
+	//returns the complete xml with password meta tag
+
+		if (!$mynzb->head) {
+			$head = $mynzb->addChild("head");
+		} else {
+			$head = $mynzb->head;
+
+			//if password already in head, return xml
+			foreach ($head->meta as $meta) {
+				if ($meta->attributes() == "password" && $meta != "") {
+					return true;
+				}
+			}
+		}
+
+		$nzb_pass = $head->addChild("meta", $password);
+		$nzb_pass->addAttribute("type", "password");
+
+		return true;
+
+	}
+
+	/**
+	 * @param object $nzbXML Reference of simpleXmlObject with NZB contents.
+	 * @return string
+	 *
+	 * @access protected
+	 */
+	protected function passwordFromXML(&$xml)
+	{
+	//check if a meta tag with attribute password exists in head and return the password
+	//returns the password as single string
+		if ($xml->head) {
+			foreach ($xml->head->meta as $meta) {
+				if ($meta->attributes() == "password") {
+					return $meta;
+				}
+			}
+		}
+	}
+
+	/**
 	 * @param object $nzbXML Reference of simpleXmlObject with NZB contents.
 	 * @param bool|string $useNzbName Use the NZB file name as release name?
 	 * @return bool
@@ -268,7 +335,18 @@ class NZBImport
 	protected function scanNZBFile(&$nzbXML, $useNzbName = false)
 	{
 		$totalFiles = $totalSize = $groupID = 0;
-		$isBlackListed = $groupName = $firstName = $posterName = $postDate = false;
+		$isBlackListed = $groupName = $firstName = $posterName = $postDate = $password = false;
+
+		if ($useNzbName != false) {
+			$password = $this->passwordFromName($useNzbName);
+			if ($password != false) {
+				$this->passwordToNzb($nzbXML, $password);
+			}
+			$useNzbName = preg_replace("{{.*}}", "", $useNzbName);
+		}
+		if ($password === false) {
+			$password = $this->passwordFromXML($nzbXML);
+		}
 
 		// Go through the NZB, get the details, look if it's blacklisted, look if we have the groups.
 		foreach ($nzbXML->file as $file) {
@@ -363,6 +441,7 @@ class NZBImport
 				'groupName'  => $groupName,
 				'totalFiles' => $totalFiles,
 				'totalSize'  => $totalSize,
+				'password'   => $password
 			]
 		);
 	}
@@ -431,7 +510,8 @@ class NZBImport
 					'isrenamed' => $renamed,
 					'reqidstatus' => 0,
 					'predb_id' => 0,
-					'nzbstatus' => NZB::NZB_ADDED
+					'nzbstatus' => NZB::NZB_ADDED,
+					'password' => $this->pdo->escapeString($nzbDetails['password'])
 				]
 			);
 		} else {

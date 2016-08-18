@@ -663,13 +663,18 @@ class Categorize extends Category
 	public function isHDTV()
 	{
 		if (preg_match('/1080(i|p)|720p|bluray/i', $this->releaseName)) {
-			$this->tmpCat = Category::TV_HD;
-
+			$this->tmpCat = Category::TV_EN_HD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_HD;
+			}
 			return true;
 		}
 		if ($this->catWebDL == false) {
 			if (preg_match('/web[-._ ]dl|web-?rip/i', $this->releaseName)) {
-				$this->tmpCat = Category::TV_HD;
+				$this->tmpCat = Category::TV_EN_HD;
+				if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+					$this->tmpCat = Category::TV_HD;
+				}
 
 				return true;
 			}
@@ -754,8 +759,10 @@ class Categorize extends Category
 	public function isMovieDVD()
 	{
 		if (preg_match('/(dvd\-?r|[-._ ]dvd|dvd9|dvd5|[-._ ]r5)[-._ ]/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_DVD;
-
+			$this->tmpCat = Category::MOVIE_EN_DVD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_DVD;
+			}
 			return true;
 		}
 
@@ -765,8 +772,10 @@ class Categorize extends Category
 	public function isMovieSD()
 	{
 		if (preg_match('/(divx|dvdscr|extrascene|dvdrip|\.CAM|HDTS(-LINE)?|vhsrip|xvid(vd)?)[-._ ]/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_SD;
-
+			$this->tmpCat = Category::MOVIE_EN_SD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_SD;
+			}
 			return true;
 		}
 
@@ -776,8 +785,10 @@ class Categorize extends Category
 	public function isMovie3D()
 	{
 		if (preg_match('/[-._ ]3D\s?[\.\-_\[ ](1080p|(19|20)\d\d|AVC|BD(25|50)|Blu[-._ ]?ray|CEE|Complete|GER|MVC|MULTi|SBS|H(-)?SBS)[-._ ]/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_3D;
-
+			$this->tmpCat = Category::MOVIE_EN_3D;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_3D;
+			}
 			return true;
 		}
 
@@ -789,8 +800,10 @@ class Categorize extends Category
 		if (preg_match('/bluray\-|[-._ ]bd?[-._ ]?(25|50)|blu-ray|Bluray\s\-\sUntouched|[-._ ]untouched[-._ ]/i', $this->releaseName)
 			&& !preg_match('/SecretUsenet\.com/i', $this->releaseName)
 		) {
-			$this->tmpCat = Category::MOVIE_BLURAY;
-
+			$this->tmpCat = Category::MOVIE_EN_3DBLURAY;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_3DBLURAY;
+			}
 			return true;
 		}
 
@@ -800,13 +813,18 @@ class Categorize extends Category
 	public function isMovieHD()
 	{
 		if (preg_match('/720p|1080p|AVC|VC1|VC\-1|web\-dl|wmvhd|x264|XvidHD|bdrip/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_HD;
-
+			$this->tmpCat = Category::MOVIE_EN_HD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_HD;
+			}
 			return true;
 		}
 		if ($this->catWebDL == false) {
 			if (preg_match('/web[-._ ]dl|web-?rip/i', $this->releaseName)) {
-				$this->tmpCat = Category::MOVIE_HD;
+				$this->tmpCat = Category::MOVIE_EN_HD;
+				if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+					$this->tmpCat = Category::MOVIE_HD;
+				}
 
 				return true;
 			}
@@ -818,7 +836,10 @@ class Categorize extends Category
 	public function isMovieUHD()
 	{
 		if (preg_match('/2160p/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_UHD;
+			$this->tmpCat = Category::MOVIE_EN_UHD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_UHD;
+			}
 			return true;
 		}
 		return false;
@@ -838,7 +859,10 @@ class Categorize extends Category
 	public function isMovieWEBDL()
 	{
 		if (preg_match('/web[-._ ]dl|web-?rip/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_WEBDL;
+			$this->tmpCat = Category::MOVIE_EN_WEBDL;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_WEBDL;
+			}
 
 			return true;
 		}

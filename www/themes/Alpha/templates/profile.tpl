@@ -72,7 +72,12 @@
 
 		</td>
 		</tr>{/if}
-
+	<tr>
+		<th>Append Password to Filename:</th>
+		<td>
+			{if $user.appendpassword == "1"}Yes{else}No{/if}
+		</td>
+	</tr>
 	<tr>
 		<th>UI Preferences:</th>
 		<td>

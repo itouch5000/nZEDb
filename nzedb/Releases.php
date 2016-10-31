@@ -79,8 +79,8 @@ class Releases
 				INSERT INTO releases
 					(name, searchname, totalpart, groups_id, adddate, guid, leftguid, postdate, fromname,
 					size, passwordstatus, haspreview, categories_id, nfostatus, nzbstatus,
-					isrenamed, iscategorized, reqidstatus, predb_id)
-				VALUES (%s, %s, %d, %d, NOW(), %s, LEFT(%s, 1), %s, %s, %s, %d, -1, %d, -1, %d, %d, 1, %d, %d)",
+					isrenamed, iscategorized, reqidstatus, predb_id, password)
+				VALUES (%s, %s, %d, %d, NOW(), %s, LEFT(%s, 1), %s, %s, %s, %d, -1, %d, -1, %d, %d, 1, %d, %d, %s)",
 				$parameters['name'],
 				$parameters['searchname'],
 				$parameters['totalpart'],
@@ -95,7 +95,8 @@ class Releases
 				$parameters['nzbstatus'],
 				$parameters['isrenamed'],
 				$parameters['reqidstatus'],
-				$parameters['predb_id']
+				$parameters['predb_id'],
+				$parameters['password']
 			)
 		);
 		$this->sphinxSearch->insertRelease($parameters);
@@ -361,7 +362,7 @@ class Releases
 	{
 		return $this->pdo->query(
 			sprintf(
-				"SELECT searchname, guid, g.name AS gname, CONCAT(cp.title, '_', c.title) AS catName
+				"SELECT searchname, guid, password, g.name AS gname, CONCAT(cp.title, '_', c.title) AS catName
 				FROM releases r
 				LEFT JOIN categories c ON r.categories_id = c.id
 				LEFT JOIN groups g ON r.groups_id = g.id
@@ -1311,10 +1312,11 @@ class Releases
 	// Writes a zip file of an array of release guids directly to the stream.
 	/**
 	 * @param $guids
+	 * @param $appendpassword
 	 *
 	 * @return string
 	 */
-	public function getZipped($guids)
+	public function getZipped($guids, $appendpassword = false)
 	{
 		$nzb = new NZB($this->pdo);
 		$zipFile = new \ZipFile();
@@ -1330,6 +1332,9 @@ class Releases
 					$r = $this->getByGuid($guid);
 					if ($r) {
 						$filename = $r['searchname'];
+						if ($appendpassword && $r['password']) {
+							$filename = $filename . '{{' . $r['password'] . '}}';
+						}
 					}
 					$zipFile->addFile($nzbContents, $filename . '.nzb');
 				}

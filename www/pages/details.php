@@ -102,6 +102,7 @@ if (isset($_GET['id'])) {
 		'releasefiles'    => (new ReleaseFiles($page->settings))->get($data['id']),
 		'searchname'      => $releases->getSimilarName($data['searchname']),
 		'failed'          => $fail->getFailedCount($data['id']),
+		'failed_users'          => $fail->getFailedNames($data['id']),
 	]);
 
 	$page->meta_title       = 'View NZB';

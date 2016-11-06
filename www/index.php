@@ -36,6 +36,7 @@ switch ($page->page) {
 	case 'getimage':
 	case 'logout':
 	case 'movies':
+	case 'movies_en':
 	case 'movie':
 	case 'music':
 	case 'musicmodal':
@@ -72,6 +73,9 @@ switch ($page->page) {
 	case 'login':
 	case 'preinfo':
 	case 'rss':
+	case 'upload':
+	case 'uploads':
+	case 'uploadstatus':
 		include(nZEDb_WWW . 'pages/' . $page->page . '.php');
 		break;
 	default:

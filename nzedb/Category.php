@@ -50,6 +50,7 @@ class Category
 	const MOVIE_EN_ROOT = '2100';
 	const MOVIE_EN_SD = '2130';
 	const MOVIE_EN_WEBDL = '2180';
+	const MOVIE_EN_OTHER = '2199';
 	const MUSIC_AUDIOBOOK = '3030';
 	const MUSIC_FOREIGN = '3060';
 	const MUSIC_LOSSLESS = '3040';
@@ -87,6 +88,7 @@ class Category
 	const TV_EN_SD = '5130';
 	const TV_EN_SPORT = '5160';
 	const TV_EN_WEBDL = '5110';
+	const TV_EN_OTHER = '5199';
 	const XXX_DVD = '6010';
 	const XXX_IMAGESET = '6060';
 	const XXX_OTHER = '6999';

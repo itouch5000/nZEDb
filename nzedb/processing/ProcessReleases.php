@@ -618,7 +618,8 @@ class ProcessReleases
 							'isrenamed' => ($properName === true ? 1 : 0),
 							'reqidstatus' => ($isReqID === true ? 1 : 0),
 							'predb_id' => ($preID === false ? 0 : $preID),
-							'nzbstatus' => NZB::NZB_NONE
+							'nzbstatus' => NZB::NZB_NONE,
+							'password' => NULL
 						]
 					);
 

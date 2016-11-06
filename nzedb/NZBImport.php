@@ -192,6 +192,7 @@ class NZBImport
 					($useNzbName ? trim(preg_replace('/\.nzb(\.gz)?$/i', '', basename($nzbFile))) : false)
 				);
 
+
 				if ($inserted) {
 
 					// Try to copy the NZB to the NZB folder.
@@ -201,6 +202,12 @@ class NZBImport
 					$fp = gzopen($path, 'w5');
 					gzwrite($fp, $nzbXML->asXML());
 					gzclose($fp);
+
+					if (!is_file($path)) {
+						$fp = gzopen($path, 'w5');
+						gzwrite($fp, $nzbString);
+						gzclose($fp);
+					}
 
 					if (!is_file($path)) {
 						$this->echoOut('ERROR: Problem compressing NZB file to: ' . $path);
@@ -326,6 +333,53 @@ class NZBImport
 	}
 
 	/**
+	 * @param string $releasename name of the release.
+	 * @param string $status status of the release (any of pending, duplicate, success).
+	 * @param integer $relID id of the release form release table.
+	 * @return boolean
+	 *
+	 * @access protected
+	 */
+	protected function setUploadStatus($releasename, $status, $relID = false)
+	{
+		$this->pdo->debugEnable();
+		$qry = sprintf("SELECT * from uploads WHERE releasename = %s AND status='pending'", $this->pdo->escapeString($releasename));
+		$uploader = $this->pdo->queryOneRow($qry);
+
+		if (!$uploader) {
+			return false;
+		}
+
+		if($relID && $uploader) {
+			$release = $this->releases->getById($relID);
+			// var_dump($release);
+			if ($release && $release["guid"]) {
+				$qry = sprintf(
+					"UPDATE uploads SET status=%s, guid=%s WHERE id=%s",
+					$this->pdo->escapeString($status),
+					$this->pdo->escapeString($release["guid"]),
+					$this->pdo->escapeString($uploader["id"])
+				);
+				$this->pdo->queryExec($qry);
+
+				return true;
+			}
+		} elseif ($uploader && $uploader['id']) {
+
+			$qry = sprintf(
+				"UPDATE uploads SET status=%s WHERE id=%s",
+				$this->pdo->escapeString($status),
+				$this->pdo->escapeString($uploader["id"])
+			);
+			$this->pdo->queryExec($qry);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param object $nzbXML Reference of simpleXmlObject with NZB contents.
 	 * @param bool|string $useNzbName Use the NZB file name as release name?
 	 * @return bool
@@ -347,6 +401,7 @@ class NZBImport
 		if ($password === false) {
 			$password = $this->passwordFromXML($nzbXML);
 		}
+
 
 		// Go through the NZB, get the details, look if it's blacklisted, look if we have the groups.
 		foreach ($nzbXML->file as $file) {
@@ -430,6 +485,7 @@ class NZBImport
 			}
 		}
 
+
 		// Try to insert the NZB details into the DB.
 		return $this->insertNZB(
 			[
@@ -482,6 +538,8 @@ class NZBImport
 		$escapedSubject = $this->pdo->escapeString($subject);
 		$escapedFromName = $this->pdo->escapeString($nzbDetails['from']);
 
+
+
 		// Look for a duplicate on name, poster and size.
 		$dupeCheck = $this->pdo->queryOneRow(
 			sprintf(
@@ -495,6 +553,8 @@ class NZBImport
 
 		if ($dupeCheck === false) {
 			$escapedSearchName = $this->pdo->escapeString($cleanName);
+			$uploader = $this->pdo->queryOneRow(sprintf('SELECT uid FROM uploads WHERE releasename = %s', $escapedSearchName));
+
 			// Insert the release into the DB.
 			$relID = $this->releases->insertRelease(
 				[
@@ -511,16 +571,22 @@ class NZBImport
 					'reqidstatus' => 0,
 					'predb_id' => 0,
 					'nzbstatus' => NZB::NZB_ADDED,
-					'password' => $this->pdo->escapeString($nzbDetails['password'])
+					'password' => $nzbDetails['password'] ? $this->pdo->escapeString($nzbDetails['password']) : 'NULL',
+					'uploader' => $uploader ? (integer) $uploader['uid'] : 'NULL'
 				]
 			);
+			if (isset($relID) && $relID !== false) {
+				$this->setUploadStatus($cleanName, 'success', $relID);
+			}
 		} else {
-			//$this->echoOut('This release is already in our DB so skipping: ' . $subject);
+			// $this->echoOut('This release is already in our DB so skipping: ' . $subject);
+			$this->setUploadStatus($cleanName, 'duplicate');
 			return false;
 		}
 
 		if (isset($relID) && $relID === false) {
 			$this->echoOut('ERROR: Problem inserting: ' . $subject);
+			$this->setUploadStatus($cleanName, 'error');
 			return false;
 		}
 		return true;

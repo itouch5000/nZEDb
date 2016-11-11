@@ -58,7 +58,7 @@ if (isset($_GET["zip"]) && $_GET["zip"] == "1") {
 		Misc::showApiError(501);
 	}
 
-	$zip = $rel->getZipped($guids);
+	$zip = $rel->getZipped($guids, $page->userdata["appendpassword"]);
 	if (strlen($zip) > 0) {
 		$page->users->incrementGrabs($uid, count($guids));
 		foreach ($guids as $guid) {
@@ -101,6 +101,9 @@ ob_start();
 readgzfile($nzbPath);
 
 $cleanName = str_replace(array(',', ' ', '/'), '_', $relData["searchname"]);
+if ($page->userdata["appendpassword"] == 1 && $relData["password"]) {
+  $cleanName = $cleanName . '{{' . $relData["password"] . '}}';
+}
 
 // Set the NZB file name.
 header("Content-Disposition: attachment; filename=" . $cleanName . ".nzb");

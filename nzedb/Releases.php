@@ -81,8 +81,8 @@ class Releases
 				INSERT INTO releases
 					(name, searchname, totalpart, groups_id, adddate, guid, leftguid, postdate, fromname,
 					size, passwordstatus, haspreview, categories_id, nfostatus, nzbstatus,
-					isrenamed, iscategorized, reqidstatus, predb_id)
-				VALUES (%s, %s, %d, %d, NOW(), %s, LEFT(%s, 1), %s, %s, %s, %d, -1, %d, -1, %d, %d, 1, %d, %d)",
+					isrenamed, iscategorized, reqidstatus, predb_id, password, upload_user)
+				VALUES (%s, %s, %d, %d, NOW(), %s, LEFT(%s, 1), %s, %s, %s, %d, -1, %d, -1, %d, %d, 1, %d, %d, %s, %d)",
 				$parameters['name'],
 				$parameters['searchname'],
 				$parameters['totalpart'],
@@ -97,7 +97,9 @@ class Releases
 				$parameters['nzbstatus'],
 				$parameters['isrenamed'],
 				$parameters['reqidstatus'],
-				$parameters['predb_id']
+				$parameters['predb_id'],
+				$parameters['password'] ? $parameters['password'] : 'NULL',
+				$parameters['uploader'] ? $parameters['uploader'] : 'NULL'
 			)
 		);
 		$this->sphinxSearch->insertRelease($parameters);
@@ -346,7 +348,7 @@ class Releases
 	{
 		return $this->pdo->query(
 			sprintf(
-				"SELECT searchname, guid, g.name AS gname, CONCAT(cp.title, '_', c.title) AS catName
+				"SELECT searchname, guid, password, g.name AS gname, CONCAT(cp.title, '_', c.title) AS catName
 				FROM releases r
 				LEFT JOIN categories c ON r.categories_id = c.id
 				LEFT JOIN groups g ON r.groups_id = g.id
@@ -1251,7 +1253,8 @@ class Releases
 				g.name AS group_name,
 				v.title AS showtitle, v.tvdb, v.trakt, v.tvrage, v.tvmaze, v.source,
 				tvi.summary, tvi.image,
-				tve.title, tve.firstaired, tve.se_complete
+				tve.title, tve.firstaired, tve.se_complete,
+				users.username as username
 				FROM releases r
 			LEFT JOIN groups g ON g.id = r.groups_id
 			LEFT JOIN categories c ON c.id = r.categories_id
@@ -1259,6 +1262,7 @@ class Releases
 			LEFT OUTER JOIN videos v ON r.videos_id = v.id
 			LEFT OUTER JOIN tv_info tvi ON r.videos_id = tvi.videos_id
 			LEFT OUTER JOIN tv_episodes tve ON r.tv_episodes_id = tve.id
+			LEFT OUTER JOIN users on users.id = r.upload_user
 			WHERE %s",
 			$gSql
 		);
@@ -1269,10 +1273,11 @@ class Releases
 	// Writes a zip file of an array of release guids directly to the stream.
 	/**
 	 * @param $guids
+	 * @param $appendpassword
 	 *
 	 * @return string
 	 */
-	public function getZipped($guids)
+	public function getZipped($guids, $appendpassword = false)
 	{
 		$nzb = new NZB($this->pdo);
 		$zipFile = new \ZipFile();
@@ -1288,6 +1293,9 @@ class Releases
 					$r = $this->getByGuid($guid);
 					if ($r) {
 						$filename = $r['searchname'];
+						if ($appendpassword && $r['password']) {
+							$filename = $filename . '{{' . $r['password'] . '}}';
+						}
 					}
 					$zipFile->addFile($nzbContents, $filename . '.nzb');
 				}
@@ -1484,7 +1492,7 @@ class Releases
 				m.cover, m.title
 			FROM releases r
 			INNER JOIN movieinfo m USING (imdbid)
-			WHERE r.categories_id BETWEEN " . Category::MOVIE_ROOT . " AND " . Category::MOVIE_OTHER . "
+			WHERE r.categories_id BETWEEN " . Category::MOVIE_ROOT . " AND " . Category::MOVIE_WEBDL . "
 			AND m.imdbid > 0
 			AND m.cover = 1
 			AND r.id in (select max(id) from releases where imdbid > 0 group by imdbid)
@@ -1613,6 +1621,22 @@ class Releases
 	 */
 	public function getNewestTV()
 	{
+		// return $this->pdo->query(
+		// 	"SELECT r.videos_id, r.guid, r.name, r.searchname, r.size, r.completion,
+		// 		r.postdate, r.categories_id, r.comments, r.grabs,
+		// 		v.id AS tvid, v.title AS tvtitle, v.tvdb, v.trakt, v.tvrage, v.tvmaze, v.imdb, v.tmdb,
+		// 		tvi.image
+		// 	FROM releases r
+		// 	INNER JOIN videos v ON r.videos_id = v.id
+		// 	INNER JOIN tv_info tvi ON r.videos_id = tvi.videos_id
+		// 	WHERE r.categories_id BETWEEN " . Category::TV_ROOT . " AND "	. Category::TV_DOCUMENTARY .
+		// 	" AND v.id > 0
+		// 	AND v.type = 0
+		// 	AND tvi.image = 1
+		// 	AND r.id in (select max(id) from releases where videos_id > 0 group by videos_id)
+		// 	ORDER BY r.postdate DESC
+		// 	LIMIT 24", true, nZEDb_CACHE_EXPIRY_LONG
+		// );
 		return $this->pdo->query(
 			"SELECT r.videos_id, r.guid, r.name, r.searchname, r.size, r.completion,
 				r.postdate, r.categories_id, r.comments, r.grabs,
@@ -1621,7 +1645,7 @@ class Releases
 			FROM releases r
 			INNER JOIN videos v ON r.videos_id = v.id
 			INNER JOIN tv_info tvi ON r.videos_id = tvi.videos_id
-			WHERE r.categories_id BETWEEN " . Category::TV_ROOT . " AND "	. Category::TV_OTHER .
+			WHERE r.categories_id BETWEEN " . Category::TV_ROOT . " AND "	. Category::TV_DOCUMENTARY .
 			" AND v.id > 0
 			AND v.type = 0
 			AND tvi.image = 1
@@ -1646,7 +1670,7 @@ class Releases
 			INNER JOIN anidb_info ai USING (anidbid)
 			WHERE r.categories_id = " . Category::TV_ANIME . "
 			AND at.anidbid > 0
-			AND at.lang = 'en'
+			AND at.lang = 'de'
 			AND ai.picture != ''
 			AND r.id IN (SELECT MAX(id) FROM releases WHERE anidbid > 0 GROUP BY anidbid)
 			GROUP BY r.id

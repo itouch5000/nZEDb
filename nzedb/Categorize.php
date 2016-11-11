@@ -84,8 +84,8 @@ class Categorize extends Category
 			case $this->isPC():
 			case $this->isXxx():
 			case $this->isTV():
-			case $this->isMusic():
 			case $this->isMovie():
+			case $this->isMusic():
 			case $this->isConsole():
 			case $this->isBook():
 				return $this->tmpCat;
@@ -388,7 +388,7 @@ class Categorize extends Category
 					}
 					break;
 				case preg_match('/alt\.binaries\.ipod\.videos\.tvshows/', $group):
-					$this->tmpCat = Category::TV_OTHER;
+					$this->tmpCat = Category::TV_EN_OTHER;
 					break;
 				case $group === 'alt.binaries.mac':
 					$this->tmpCat = Category::PC_MAC;
@@ -563,7 +563,10 @@ class Categorize extends Category
 				case $this->isOtherTV2():
 					return true;
 				default:
-					$this->tmpCat = Category::TV_OTHER;
+					$this->tmpCat = Category::TV_EN_OTHER;
+					if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+						$this->tmpCat = Category::TV_OTHER;
+					}
 
 					return true;
 			}
@@ -573,7 +576,10 @@ class Categorize extends Category
 			if ($this->isSportTV()) {
 				return true;
 			}
-			$this->tmpCat = Category::TV_OTHER;
+			$this->tmpCat = Category::TV_EN_OTHER;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_OTHER;
+			}
 
 			return true;
 		}
@@ -587,7 +593,10 @@ class Categorize extends Category
 			//special case for "Have.I.Got.News.For.You" tv show
 			&& !preg_match('/[-._ ]Got[-._ ]News[-._ ]For[-._ ]You/i', $this->releaseName)
 		) {
-			$this->tmpCat = Category::TV_OTHER;
+			$this->tmpCat = Category::TV_EN_OTHER;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_OTHER;
+			}
 
 			return true;
 		}
@@ -622,8 +631,10 @@ class Categorize extends Category
 			case preg_match('/[-._ ]?(DTM|FIFA|formula[-._ ]1|indycar|Rugby|NASCAR|NBA|NHL|NRL|netball[-._ ]anz|ROH|SBK|Superleague|The[-._ ]Ultimate[-._ ]Fighter|TNA|V8[-._ ]Supercars|WBA|WrestleMania)[-._ ]/i', $this->releaseName):
 			case preg_match('/[-._ ]?(AFL|Grand Prix|Indy[-._ ]Car|(iMPACT|Smoky[-._ ]Mountain|Texas)[-._ ]Wrestling|Moto[-._ ]?GP|NSCS[-._ ]ROUND|NECW|Poker|PWX|Rugby|WCW)[-._ ]/i', $this->releaseName):
 			case preg_match('/[-._ ]?(Horse)[-._ ]Racing[-._ ]/i', $this->releaseName):
-				$this->tmpCat = Category::TV_SPORT;
-
+				$this->tmpCat = Category::TV_EN_SPORT;
+				if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+					$this->tmpCat = Category::TV_SPORT;
+				}
 				return true;
 			default:
 				return false;
@@ -633,8 +644,10 @@ class Categorize extends Category
 	public function isDocumentaryTV()
 	{
 		if (preg_match('/[-._ ](Docu|Documentary)[-._ ]/i', $this->releaseName)) {
-			$this->tmpCat = Category::TV_DOCUMENTARY;
-
+			$this->tmpCat = Category::TV_EN_DOCUMENTARY;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_DOCUMENTARY;
+			}
 			return true;
 		}
 
@@ -644,8 +657,10 @@ class Categorize extends Category
 	public function isWEBDL()
 	{
 		if (preg_match('/web[-._ ]dl|web-?rip/i', $this->releaseName)) {
-			$this->tmpCat = Category::TV_WEBDL;
-
+			$this->tmpCat = Category::TV_EN_WEBDL;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_WEBDL;
+			}
 			return true;
 		}
 
@@ -655,8 +670,10 @@ class Categorize extends Category
 	public function isAnimeTV()
 	{
 		if (preg_match('/[-._ ]Anime[-._ ]|^\[[a-zA-Z\.\-]+\].*[-_].*\d{1,3}[-_. ]((\[|\()((\d{1,4}x\d{1,4})|(h264-)?\d{3,4}(p|i))(\]|\))\s?(\[AAC\])?|\[[a-fA-F0-9]{8}\]|(8|10)BIT|hi10p)(\[[a-fA-F0-9]{8}\])?/i', $this->releaseName)) {
-			$this->tmpCat = Category::TV_ANIME;
-
+			$this->tmpCat = Category::TV_EN_ANIME;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_ANIME;
+			}
 			return true;
 		}
 
@@ -666,13 +683,18 @@ class Categorize extends Category
 	public function isHDTV()
 	{
 		if (preg_match('/1080(i|p)|720p|bluray/i', $this->releaseName)) {
-			$this->tmpCat = Category::TV_HD;
-
+			$this->tmpCat = Category::TV_EN_HD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_HD;
+			}
 			return true;
 		}
 		if ($this->catWebDL == false) {
 			if (preg_match('/web[-._ ]dl|web-?rip/i', $this->releaseName)) {
-				$this->tmpCat = Category::TV_HD;
+				$this->tmpCat = Category::TV_EN_HD;
+				if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+					$this->tmpCat = Category::TV_HD;
+				}
 
 				return true;
 			}
@@ -684,7 +706,10 @@ class Categorize extends Category
 	public function isUHDTV()
 	{
 		if (preg_match('/2160p/i', $this->releaseName)) {
-			$this->tmpCat = Category::TV_UHD;
+			$this->tmpCat = Category::TV_EN_UHD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_UHD;
+			}
 			return true;
 		}
 		return false;
@@ -696,7 +721,10 @@ class Categorize extends Category
 			case preg_match('/(360|480|576)p|Complete[-._ ]Season|dvdr(ip)?|dvd5|dvd9|\.pdtv|SD[-._ ]TV|TVRip|NTSC|BDRip|hdtv|xvid/i', $this->releaseName):
 			case preg_match('/((H|P)D[-._ ]?TV|DSR|WebRip)[-._ ]x264/i', $this->releaseName):
 			case preg_match('/s\d{1,3}[-._ ]?[ed]\d{1,3}([ex]\d{1,3}|[-.\w ])|\s\d{3,4}\s/i', $this->releaseName) && preg_match('/(H|P)D[-._ ]?TV|BDRip|WEB[-._ ]x264/i', $this->releaseName):
+				$this->tmpCat = Category::TV_EN_SD;
+				if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
 				$this->tmpCat = Category::TV_SD;
+			}
 
 				return true;
 			default:
@@ -707,7 +735,10 @@ class Categorize extends Category
 	public function isOtherTV2()
 	{
 		if (preg_match('/[-._ ]s\d{1,3}[-._ ]?(e|d(isc)?)\d{1,3}([-._ ]|$)/i', $this->releaseName)) {
-			$this->tmpCat = Category::TV_OTHER;
+			$this->tmpCat = Category::TV_EN_OTHER;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::TV_OTHER;
+			}
 
 			return true;
 		}
@@ -757,8 +788,10 @@ class Categorize extends Category
 	public function isMovieDVD()
 	{
 		if (preg_match('/(dvd\-?r|[-._ ]dvd|dvd9|dvd5|[-._ ]r5)[-._ ]/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_DVD;
-
+			$this->tmpCat = Category::MOVIE_EN_DVD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_DVD;
+			}
 			return true;
 		}
 
@@ -768,8 +801,10 @@ class Categorize extends Category
 	public function isMovieSD()
 	{
 		if (preg_match('/(divx|dvdscr|extrascene|dvdrip|\.CAM|HDTS(-LINE)?|vhsrip|xvid(vd)?)[-._ ]/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_SD;
-
+			$this->tmpCat = Category::MOVIE_EN_SD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_SD;
+			}
 			return true;
 		}
 
@@ -779,8 +814,10 @@ class Categorize extends Category
 	public function isMovie3D()
 	{
 		if (preg_match('/[-._ ]3D\s?[\.\-_\[ ](1080p|(19|20)\d\d|AVC|BD(25|50)|Blu[-._ ]?ray|CEE|Complete|GER|MVC|MULTi|SBS|H(-)?SBS)[-._ ]/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_3D;
-
+			$this->tmpCat = Category::MOVIE_EN_3D;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_3D;
+			}
 			return true;
 		}
 
@@ -792,8 +829,10 @@ class Categorize extends Category
 		if (preg_match('/bluray\-|[-._ ]bd?[-._ ]?(25|50)|blu-ray|Bluray\s\-\sUntouched|[-._ ]untouched[-._ ]/i', $this->releaseName)
 			&& !preg_match('/SecretUsenet\.com/i', $this->releaseName)
 		) {
-			$this->tmpCat = Category::MOVIE_BLURAY;
-
+			$this->tmpCat = Category::MOVIE_EN_BLURAY;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_BLURAY;
+			}
 			return true;
 		}
 
@@ -803,13 +842,18 @@ class Categorize extends Category
 	public function isMovieHD()
 	{
 		if (preg_match('/720p|1080p|AVC|VC1|VC\-1|web\-dl|wmvhd|x264|XvidHD|bdrip/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_HD;
-
+			$this->tmpCat = Category::MOVIE_EN_HD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_HD;
+			}
 			return true;
 		}
 		if ($this->catWebDL == false) {
 			if (preg_match('/web[-._ ]dl|web-?rip/i', $this->releaseName)) {
-				$this->tmpCat = Category::MOVIE_HD;
+				$this->tmpCat = Category::MOVIE_EN_HD;
+				if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+					$this->tmpCat = Category::MOVIE_HD;
+				}
 
 				return true;
 			}
@@ -821,7 +865,10 @@ class Categorize extends Category
 	public function isMovieUHD()
 	{
 		if (preg_match('/2160p/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_UHD;
+			$this->tmpCat = Category::MOVIE_EN_UHD;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_UHD;
+			}
 			return true;
 		}
 		return false;
@@ -830,7 +877,10 @@ class Categorize extends Category
 	public function isMovieOther()
 	{
 		if (preg_match('/[-._ ]cam[-._ ]/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_OTHER;
+			$this->tmpCat = Category::MOVIE_EN_OTHER;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_OTHER;
+			}
 
 			return true;
 		}
@@ -841,7 +891,10 @@ class Categorize extends Category
 	public function isMovieWEBDL()
 	{
 		if (preg_match('/web[-._ ]dl|web-?rip/i', $this->releaseName)) {
-			$this->tmpCat = Category::MOVIE_WEBDL;
+			$this->tmpCat = Category::MOVIE_EN_WEBDL;
+			if (preg_match('/german|deutsch|staffel|videomann|komplett/i', $this->releaseName)) {
+				$this->tmpCat = Category::MOVIE_WEBDL;
+			}
 
 			return true;
 		}
@@ -922,7 +975,7 @@ class Categorize extends Category
 
 	public function isPCGame()
 	{
-		if (preg_match('/[^a-z0-9](0x0007|ALiAS|BACKLASH|BAT|CLONECD|CPY|FAS(DOX|iSO)|FLT([-._ ]|COGENT)|FLT(DOX)?|PC GAMES?|\(?(Game(s|z)|GAME(S|Z))\)? ?(\((C|c)\))|GENESIS|-GOG|-HATRED|HI2U|INLAWS|JAGUAR|MAZE|MONEY|OUTLAWS|PPTCLASSiCS|PC Game|PROPHET|RAiN|Razor1911|RELOADED|DEViANCE|PLAZA|RiTUELYPOGEiOS|[rR][iI][pP]-[uU][nN][lL][eE][aA][sS][hH][eE][dD]|Steam(\b)?Rip|SKIDROW|TiNYiSO|CODEX)[^a-z0-9]?/', $this->releaseName)) {
+		if (preg_match('/[^a-z0-9](0x0007|ALiAS|BACKLASH|BAT|CLONECD|CPY|FAS(DOX|iSO)|FLT([-._ ]|COGENT)|FLT(DOX)?|PC GAMES?|\(?(Game(s|z)|GAME(S|Z))\)? ?(\((C|c)\))|GENESIS|-GOG|HATRED|SiLENTGATE|ADDONiA|TiWLTH|ENiGMA|POSTMORTEM|HI2U|INLAWS|JAGUAR|MAZE|MONEY|OUTLAWS|PPTCLASSiCS|PC Game|PROPHET|RAiN|Razor1911|RELOADED|DEViANCE|PLAZA|RiTUELYPOGEiOS|[rR][iI][pP]-[uU][nN][lL][eE][aA][sS][hH][eE][dD]|Steam(\b)?Rip|SKIDROW|TiNYiSO|CODEX)[^a-z0-9]?/', $this->releaseName)) {
 			$this->tmpCat = Category::PC_GAMES;
 			return true;
 		}
@@ -1453,7 +1506,7 @@ class Categorize extends Category
 		switch (true) {
 			case $this->categorizeForeign === false:
 				return false;
-			case preg_match('/[ \-\._](brazilian|chinese|croatian|danish|deutsch|dutch|estonian|flemish|finnish|french|german|greek|hebrew|icelandic|italian|ita|latin|mandarin|nordic|norwegian|polish|portuguese|japenese|japanese|russian|serbian|slovenian|spanish|spanisch|swedish|thai|turkish)[-._ ]/i', $this->releaseName):
+			case preg_match('/[ \-\._](brazilian|chinese|croatian|danish|deutsch|dutch|estonian|flemish|finnish|french|greek|hebrew|icelandic|italian|ita|latin|mandarin|nordic|norwegian|polish|portuguese|japenese|japanese|russian|serbian|slovenian|spanish|spanisch|swedish|thai|turkish)[-._ ]/i', $this->releaseName):
 				$this->tmpCat = Category::BOOKS_FOREIGN;
 
 				return true;

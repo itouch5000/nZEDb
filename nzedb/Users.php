@@ -288,7 +288,7 @@ class Users
 		$movieView, $xxxView, $musicView, $consoleView, $gameView, $bookView,
 		$cp_url = false, $cp_api = false, $style = 'None', $queueType = '',
 		$nzbGetURL = '', $nzbGetUsername = '', $nzbGetPassword = '',
-		$sabURL = '', $sabApiKey = '', $sabPriority = '', $sabApiKeyType = '')
+		$sabURL = '', $sabApiKey = '', $sabPriority = '', $sabApiKeyType = '', $appendpassword)
 	{
 
 		$userName = trim($userName);
@@ -335,6 +335,7 @@ class Users
 		$sql[] = sprintf('consoleview = %d', $consoleView);
 		$sql[] = sprintf('gameview = %d', $gameView);
 		$sql[] = sprintf('bookview = %d', $bookView);
+		$sql[] = sprintf('appendpassword = %d', $appendpassword);
 		$sql[] = sprintf('style = %s', $this->pdo->escapeString($style));
 		if ($queueType !== '') {
 			$sql[] = sprintf('queuetype = %d', $queueType);

@@ -1,0 +1,59 @@
+/*
+UploadiFive
+Copyright (c) 2012 Reactive Apps, Ronnie Garcia
+*/
+
+#queue{
+	background: #f8f8f8 url(../../shared/img/dropzone.png) center center no-repeat;
+	height: 400px;
+	border: 1px solid #E5E5E5;
+	overflow: auto;
+	margin-bottom: 10px;
+	padding: 0 3px 3px;
+
+}
+.uploadifive-button {
+	background-color: #222;
+	xborder: 2px solid #808080;
+	color: #FFF;
+	font-size: 12px;
+	text-align: center;
+	text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+	text-transform: uppercase;
+	width: 100px;
+	height: 30px;
+	line-height: 30px;
+	text-decoration: none;
+	font-weight: 200;
+	float: left;
+	margin-right: 10px;
+}
+.uploadifive-button:hover {
+	background-color: #000;
+	color: #fff;
+}
+.uploadifive-queue-item {
+	background-color: #ffffff;
+	font-size: 12px;
+	margin-top: 3px;
+	padding: 15px;
+}
+.uploadifive-queue-item .close {
+	background: url('uploadifive-cancel.png') 0 0 no-repeat;
+	display: block;
+	float: right;
+	height: 16px;
+	text-indent: -9999px;
+	width: 16px;
+}
+.uploadifive-queue-item .progress {
+	border: 1px solid #222;
+	height: 10px;
+	margin-top: 5px;
+	width: 100%;
+}
+.uploadifive-queue-item .progress-bar {
+	background-color: #222;
+	height: 10px;
+	width: 0;
+}

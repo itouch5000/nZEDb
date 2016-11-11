@@ -51,6 +51,13 @@
 			</td>
 		</tr>
 		<tr>
+			<th>Append Password to Filename:</th>
+			<td>
+				<input id="appendpassword" name="appendpassword" value="1" type="checkbox" {if $user.appendpassword == "1"}checked="checked"{/if}>
+				<span class="help-block">Append SABnzbd Style Password to filename if present.</span>
+			</td>
+		</tr>
+		<tr>
 			<th>View Movie Page:</th>
 			<td>
 				<input id="movieview" name="movieview" value="1" type="checkbox" {if $user.movieview == "1"}checked="checked"{/if}>

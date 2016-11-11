@@ -73,13 +73,13 @@ function release_flag($text, $page)
 			$code = "nl";
 			$language = "Dutch";
 			break;
-		case preg_match('/French|Vostfr|Multi/i', $text):
-			$code = "fr";
-			$language = "French";
-			break;
 		case preg_match('/German(bed)?|\bger\b/i', $text):
 			$code = "de";
 			$language = "German";
+			break;
+		case preg_match('/French|Vostfr|Multi/i', $text):
+			$code = "fr";
+			$language = "French";
 			break;
 		case preg_match('/\bGreek\b/i', $text):
 			$code = "gr";

@@ -14,7 +14,7 @@ $category = new Category(['Settings' => $page->settings]);
 $error    = false;
 
 // Array with all the possible poster wall types.
-$startTypes = ['Books', 'Console', 'Movies', 'XXX', 'Audio', 'PC', 'TV', 'Anime'/*, 'Recent'*/];
+$startTypes = ['Books', 'Console', 'Movies DE', 'XXX', 'Audio', 'PC', 'TV DE', 'Anime'/*, 'Recent'*/];
 // Array that will contain the poster wall types (the above array minus whatever they have disabled in admin).
 $types = [];
 // Get the names of all enabled parent categories.
@@ -24,7 +24,7 @@ if (count($categories) > 0) {
 	foreach ($categories as $pType) {
 		if (in_array($pType['title'], $startTypes)) {
 			$types[] = $pType['title'];
-			if ($pType['title'] == 'TV') {
+			if ($pType['title'] == 'TV DE') {
 				$types[] = 'Anime';
 			}
 		}
@@ -54,7 +54,7 @@ if (!$error) {
 	$page->smarty->assign('type', $_REQUEST['t']);
 
 	switch ($_REQUEST['t']) {
-		case 'Movies':
+		case 'Movies DE':
 			$getnewestmovies = $releases->getNewestMovies();
 			$page->smarty->assign('newest', $getnewestmovies);
 
@@ -94,7 +94,7 @@ if (!$error) {
 			$page->smarty->assign('goto', 'books');
 			break;
 
-		case 'TV':
+		case 'TV DE':
 			$getnewesttv = $releases->getNewestTV();
 			$page->smarty->assign('newest', $getnewesttv);
 			$page->smarty->assign('goto', 'series');

@@ -194,6 +194,7 @@ class NZBImport
 					($useNzbName ? trim(preg_replace('/\.nzb(\.gz)?$/i', '', basename($nzbFile))) : false)
 				);
 
+
 				if ($inserted) {
 
 					// Try to copy the NZB to the NZB folder.
@@ -201,8 +202,14 @@ class NZBImport
 
 					// Try to compress the NZB file in the NZB folder.
 					$fp = gzopen($path, 'w5');
-					gzwrite($fp, $nzbString);
+					gzwrite($fp, $nzbXML->asXML());
 					gzclose($fp);
+
+					if (!is_file($path)) {
+						$fp = gzopen($path, 'w5');
+						gzwrite($fp, $nzbString);
+						gzclose($fp);
+					}
 
 					if (!is_file($path)) {
 						$this->echoOut('ERROR: Problem compressing NZB file to: ' . $path);
@@ -261,6 +268,120 @@ class NZBImport
 	}
 
 	/**
+	 * @param object $filename filename of NZB File ex: Release.S01e01.Name-Group{{PASSWORD}}.nzb
+	 * @return string|false
+	 *
+	 * @access protected
+	 */
+	protected function passwordFromName($filename)
+	{
+		$r = explode("{{", $filename);
+		if (isset($r[1])){
+				$r = explode("}}", $r[1]);
+				return $r[0];
+		}
+		return false;
+	}
+
+	/**
+	 * @param object $nzbXML Reference of simpleXmlObject with NZB contents.
+	 * @param string $password the password to write in XML Header.
+	 * @return bool
+	 *
+	 * @access protected
+	 */
+	protected function passwordToNzb(&$mynzb, $password)
+	{
+	//set the password as meta key inside the nzb file
+	//returns the complete xml with password meta tag
+
+		if (!$mynzb->head) {
+			$head = $mynzb->addChild("head");
+		} else {
+			$head = $mynzb->head;
+
+			//if password already in head, return xml
+			foreach ($head->meta as $meta) {
+				if ($meta->attributes() == "password" && $meta != "") {
+					return true;
+				}
+			}
+		}
+
+		$nzb_pass = $head->addChild("meta", $password);
+		$nzb_pass->addAttribute("type", "password");
+
+		return true;
+
+	}
+
+	/**
+	 * @param object $nzbXML Reference of simpleXmlObject with NZB contents.
+	 * @return string
+	 *
+	 * @access protected
+	 */
+	protected function passwordFromXML(&$xml)
+	{
+	//check if a meta tag with attribute password exists in head and return the password
+	//returns the password as single string
+		if ($xml->head) {
+			foreach ($xml->head->meta as $meta) {
+				if ($meta->attributes() == "password") {
+					return $meta;
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param string $releasename name of the release.
+	 * @param string $status status of the release (any of pending, duplicate, success).
+	 * @param integer $relID id of the release form release table.
+	 * @return boolean
+	 *
+	 * @access protected
+	 */
+	protected function setUploadStatus($releasename, $status, $relID = false)
+	{
+		$this->pdo->debugEnable();
+		$qry = sprintf("SELECT * from uploads WHERE releasename = %s AND status='pending'", $this->pdo->escapeString($releasename));
+		$uploader = $this->pdo->queryOneRow($qry);
+
+		if (!$uploader) {
+			return false;
+		}
+
+		if($relID && $uploader) {
+			$release = $this->releases->getById($relID);
+			// var_dump($release);
+			if ($release && $release["guid"]) {
+				$qry = sprintf(
+					"UPDATE uploads SET status=%s, guid=%s WHERE id=%s",
+					$this->pdo->escapeString($status),
+					$this->pdo->escapeString($release["guid"]),
+					$this->pdo->escapeString($uploader["id"])
+				);
+				$this->pdo->queryExec($qry);
+
+				return true;
+			}
+		} elseif ($uploader && $uploader['id']) {
+
+			$qry = sprintf(
+				"UPDATE uploads SET status=%s WHERE id=%s",
+				$this->pdo->escapeString($status),
+				$this->pdo->escapeString($uploader["id"])
+			);
+			$this->pdo->queryExec($qry);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param object $nzbXML Reference of simpleXmlObject with NZB contents.
 	 * @param bool|string $useNzbName Use the NZB file name as release name?
 	 * @return bool
@@ -270,7 +391,19 @@ class NZBImport
 	protected function scanNZBFile(&$nzbXML, $useNzbName = false)
 	{
 		$totalFiles = $totalSize = $groupID = 0;
-		$isBlackListed = $groupName = $firstName = $posterName = $postDate = false;
+		$isBlackListed = $groupName = $firstName = $posterName = $postDate = $password = false;
+
+		if ($useNzbName != false) {
+			$password = $this->passwordFromName($useNzbName);
+			if ($password != false) {
+				$this->passwordToNzb($nzbXML, $password);
+			}
+			$useNzbName = trim(preg_replace("{{.*}}", "", $useNzbName));
+		}
+		if ($password === false) {
+			$password = $this->passwordFromXML($nzbXML);
+		}
+
 
 		// Go through the NZB, get the details, look if it's blacklisted, look if we have the groups.
 		foreach ($nzbXML->file as $file) {
@@ -354,6 +487,7 @@ class NZBImport
 			}
 		}
 
+
 		// Try to insert the NZB details into the DB.
 		return $this->insertNZB(
 			[
@@ -365,6 +499,7 @@ class NZBImport
 				'groupName'  => $groupName,
 				'totalFiles' => $totalFiles,
 				'totalSize'  => $totalSize,
+				'password'   => $password
 			]
 		);
 	}
@@ -405,6 +540,8 @@ class NZBImport
 		$escapedSubject = $this->pdo->escapeString($subject);
 		$escapedFromName = $this->pdo->escapeString($nzbDetails['from']);
 
+
+
 		// Look for a duplicate on name, poster and size.
 		$dupeCheck = $this->pdo->queryOneRow(
 			sprintf(
@@ -418,6 +555,8 @@ class NZBImport
 
 		if ($dupeCheck === false) {
 			$escapedSearchName = $this->pdo->escapeString($cleanName);
+			$uploader = $this->pdo->queryOneRow(sprintf('SELECT uid FROM uploads WHERE releasename = %s', $escapedSearchName));
+
 			// Insert the release into the DB.
 			$relID = $this->releases->insertRelease(
 				[
@@ -433,16 +572,23 @@ class NZBImport
 					'isrenamed' => $renamed,
 					'reqidstatus' => 0,
 					'predb_id' => 0,
-					'nzbstatus' => NZB::NZB_ADDED
+					'nzbstatus' => NZB::NZB_ADDED,
+					'password' => $nzbDetails['password'] ? $this->pdo->escapeString($nzbDetails['password']) : 'NULL',
+					'uploader' => $uploader ? (integer) $uploader['uid'] : 'NULL'
 				]
 			);
+			if (isset($relID) && $relID !== false) {
+				$this->setUploadStatus($cleanName, 'success', $relID);
+			}
 		} else {
-			//$this->echoOut('This release is already in our DB so skipping: ' . $subject);
+			// $this->echoOut('This release is already in our DB so skipping: ' . $subject);
+			$this->setUploadStatus($cleanName, 'duplicate');
 			return false;
 		}
 
 		if (isset($relID) && $relID === false) {
 			$this->echoOut('ERROR: Problem inserting: ' . $subject);
+			$this->setUploadStatus($cleanName, 'error');
 			return false;
 		}
 		return true;

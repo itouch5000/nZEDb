@@ -41,7 +41,7 @@ class DnzbFailures
 	{
 		$result = $this->pdo->query(
 			sprintf('
-				SELECT failed AS num
+				SELECT COUNT(failed) AS num
 				FROM dnzb_failures
 				WHERE release_id = %s',
 				$relId
@@ -49,6 +49,30 @@ class DnzbFailures
 		);
 		if (is_array($result) && !empty($result)) {
 			return $result[0]['num'];
+		}
+		return false;
+	}
+
+	/**
+	 * @note Read failed downloads count and names for requested release_id
+	 *
+	 * @param string $relId
+	 *
+	 * @return array|bool
+	 */
+	public function getFailedNames($relId)
+	{
+		$result = $this->pdo->query(
+			sprintf('
+				SELECT GROUP_CONCAT(users.username SEPARATOR ", ") as names
+				FROM dnzb_failures
+				LEFT JOIN users on users.id = dnzb_failures.userid
+				WHERE release_id = %s',
+				$relId
+			)
+		);
+		if (is_array($result) && !empty($result)) {
+			return $result[0]['names'];
 		}
 		return false;
 	}
